@@ -48,10 +48,26 @@ async function prepareBinary() {
     const downloadPath = await tc.downloadTool(downloadUrl, undefined, auth);
 
     core.info(`Downloaded gscache to: ${downloadPath}, extracting...`);
-    const extractedPath = await tc.extractTar(downloadPath, undefined, "xz");
+    const extractedPath = await tc.extractTar(downloadPath);
 
     core.info(`Extracted gscache to: ${extractedPath}, installing to cache...`);
     cachedPath = await tc.cacheDir(extractedPath, "gscache", version, arch);
+
+    // FIXME: This is an upstream package error, we should always package the binary as gscache
+    // Move from gscache-linux-arm64 to gscache
+    const oldBinaryPath = path.join(
+      cachedPath,
+      `gscache-linux-${normalizedArch}`,
+    );
+    const newBinaryPath = path.join(cachedPath, "gscache");
+    if (fs.existsSync(oldBinaryPath)) {
+      fs.renameSync(oldBinaryPath, newBinaryPath);
+      core.info(`Renamed ${oldBinaryPath} to ${newBinaryPath}`);
+    } else {
+      core.warning(
+        `Expected binary not found at ${oldBinaryPath}, skipping rename.`,
+      );
+    }
 
     if (!cachedPath) {
       throw new Error("Failed to cache gscache binary.");

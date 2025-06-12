@@ -39,16 +39,68 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    services:
+      minio:
+        image: minio/minio:edge-cicd
+        options: --health-cmd "curl -s http://localhost:9000/minio/health/live"
+        env:
+          MINIO_ROOT_USER: minioadmin
+          MINIO_ROOT_PASSWORD: minioadmin
+        ports:
+          - 9000:9000
+
     steps:
       - uses: actions/checkout@v4
+
+      - name: Wait for MinIO to be ready
+        run: |
+          echo "Waiting for MinIO to be ready..."
+          timeout 60 bash -c 'until curl -f http://localhost:9000/minio/health/live; do sleep 2; done'
+          echo "MinIO is ready!"
+
+      - name: Setup MinIO client and create bucket
+        run: |
+          curl -fsSL https://dl.min.io/client/mc/release/linux-amd64/mc -o mc
+          chmod +x mc
+          ./mc alias set local http://localhost:9000 minioadmin minioadmin
+          ./mc mb local/gscache-bucket
+          ./mc ls local/
 
       - name: Setup gscache
         uses: ./
         with:
           version: v0.0.1
+          config: |
+            [backend]
+            which = "blob"
+            [backend.blob]
+            url = "s3://gscache-bucket?endpoint=http://localhost:9000&&use_path_style=true&disable_https=true"
+        env:
+          AWS_ACCESS_KEY_ID: minioadmin
+          AWS_SECRET_ACCESS_KEY: minioadmin
 
       - name: Verify gscache is available
         run: |
           echo "GOCACHEPROG is set to: $GOCACHEPROG"
           which gscache
-          gscache --version || echo "gscache binary found at $GOCACHEPROG"
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+          cache: false
+
+      - name: Test gscache with MinIO backend
+        run: |
+          cd test
+          gscache stats
+
+          go build -o helloworld helloworld.go
+          ./helloworld
+          sleep 2 && gscache stats
+
+          go build -o helloworld helloworld.go
+          sleep 2 && gscache stats
+
+      - name: List gscache contents
+        run: |
+          ./mc ls local/
