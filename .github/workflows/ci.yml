@@ -52,11 +52,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Wait for MinIO to be ready
-        run: |
-          echo "Waiting for MinIO to be ready..."
-          timeout 60 bash -c 'until curl -f http://localhost:9000/minio/health/live; do sleep 2; done'
-          echo "MinIO is ready!"
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+          cache: false
 
       - name: Setup MinIO client and create bucket
         run: |
@@ -83,11 +82,6 @@ jobs:
         run: |
           echo "GOCACHEPROG is set to: $GOCACHEPROG"
           which gscache
-
-      - uses: actions/setup-go@v5
-        with:
-          go-version: "1.24"
-          cache: false
 
       - name: Test gscache with MinIO backend
         run: |
