@@ -1,4 +1,4 @@
-# In TypeScript actions, `dist/` is a special directory. When you reference
+# In JavaScript actions, `dist/` is a special directory. When you reference
 # an action with the `uses:` property, `dist/index.js` is the code that will be
 # run. For this project, the `dist/index.js` file is transpiled from other
 # source files. This workflow ensures the `dist/` directory contains the
@@ -43,10 +43,8 @@ jobs:
 
       - name: Build dist/ Directory
         id: build
-        run: npm run bundle
+        run: npm run build
 
-      # This will fail the workflow if the `dist/` directory is different than
-      # expected.
       - name: Compare Directories
         id: diff
         run: |
@@ -61,8 +59,6 @@ jobs:
             exit 1
           fi
 
-      # If `dist/` was different than expected, upload the expected version as a
-      # workflow artifact.
       - if: ${{ failure() && steps.diff.outcome == 'failure' }}
         name: Upload Artifact
         id: upload

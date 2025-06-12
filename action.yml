@@ -1,24 +1,22 @@
-name: The name of your action here
-description: Provide a description here
-author: Your name or organization here
-
-# Add your action's branding here. This will appear on the GitHub Marketplace.
-branding:
-  icon: heart
-  color: red
-
-# Define your inputs here.
+name: "Setup gscache"
+description: "Setup gscache for Go builds"
+author: "breezewish"
 inputs:
-  milliseconds:
-    description: Your input description here
-    required: true
-    default: '1000'
-
-# Define your outputs here.
-outputs:
-  time:
-    description: Your output description here
-
+  version:
+    description: "Version of gscache to download"
+    required: false
+    default: "v0.0.1"
+  config:
+    description: "gscache configuration (populate to ~/.config/gscache/config.toml)"
+    required: false
+    default: ""
+  github-token:
+    description: "GitHub token for authenticated requests to avoid rate limiting"
+    required: false
+    default: ""
 runs:
-  using: node20
-  main: dist/index.js
+  using: "node20"
+  main: "dist/index.js"
+branding:
+  icon: "download"
+  color: "blue"
