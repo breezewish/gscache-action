@@ -68,7 +68,6 @@ jobs:
       - name: Setup gscache
         uses: ./
         with:
-          version: v0.0.1
           config: |
             [backend]
             which = "blob"
@@ -82,6 +81,7 @@ jobs:
         run: |
           echo "GOCACHEPROG is set to: $GOCACHEPROG"
           which gscache
+          gscache version
 
       - name: Test gscache with MinIO backend
         run: |

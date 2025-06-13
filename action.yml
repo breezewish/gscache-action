@@ -5,7 +5,7 @@ inputs:
   version:
     description: "Version of gscache to download"
     required: false
-    default: "v0.0.1"
+    default: ""
   config:
     description: "gscache configuration (populate to ~/.config/gscache/config.toml)"
     required: false

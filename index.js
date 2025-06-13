@@ -6,7 +6,7 @@ const path = require("path");
 const os = require("os");
 
 async function prepareBinary() {
-  const version = core.getInput("version") || "v0.0.1";
+  const version = core.getInput("version") || "v0.0.3";
   const token = core.getInput("github-token");
 
   core.info(`Setting up gscache using version ${version}`);
@@ -31,8 +31,8 @@ async function prepareBinary() {
   if (cachedPath) {
     core.info(`Reuse previously downloaded gscache at: ${cachedPath}`);
   } else {
-    const normalizedArch = arch === "x64" ? "amd64" : "arm64";
-    const downloadUrl = `https://github.com/breezewish/gscache/releases/download/${version}/gscache-linux-${normalizedArch}.tar.gz`;
+    const normalizedArch = arch === "x64" ? "x86_64" : "arm64";
+    const downloadUrl = `https://github.com/breezewish/gscache/releases/download/${version}/gscache_Linux_${normalizedArch}.tar.gz`;
 
     core.info(`Downloading gscache from: ${downloadUrl}`);
 
@@ -50,24 +50,15 @@ async function prepareBinary() {
     core.info(`Downloaded gscache to: ${downloadPath}, extracting...`);
     const extractedPath = await tc.extractTar(downloadPath);
 
-    core.info(`Extracted gscache to: ${extractedPath}, installing to cache...`);
-    cachedPath = await tc.cacheDir(extractedPath, "gscache", version, arch);
-
-    // FIXME: This is an upstream package error, we should always package the binary as gscache
-    // Move from gscache-linux-arm64 to gscache
-    const oldBinaryPath = path.join(
-      cachedPath,
-      `gscache-linux-${normalizedArch}`,
-    );
-    const newBinaryPath = path.join(cachedPath, "gscache");
-    if (fs.existsSync(oldBinaryPath)) {
-      fs.renameSync(oldBinaryPath, newBinaryPath);
-      core.info(`Renamed ${oldBinaryPath} to ${newBinaryPath}`);
-    } else {
-      core.warning(
-        `Expected binary not found at ${oldBinaryPath}, skipping rename.`,
+    const binaryPath = path.join(extractedPath, "gscache");
+    if (!fs.existsSync(binaryPath)) {
+      throw new Error(
+        `gscache binary not found after extraction ${binaryPath}`,
       );
     }
+
+    core.info(`Extracted gscache to: ${extractedPath}, installing to cache...`);
+    cachedPath = await tc.cacheDir(extractedPath, "gscache", version, arch);
 
     if (!cachedPath) {
       throw new Error("Failed to cache gscache binary.");
