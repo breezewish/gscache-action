@@ -68,11 +68,7 @@ jobs:
       - name: Setup gscache
         uses: ./
         with:
-          config: |
-            [backend]
-            which = "blob"
-            [backend.blob]
-            url = "s3://gscache-bucket?endpoint=http://localhost:9000&&use_path_style=true&disable_https=true"
+          storage: s3://gscache-bucket?endpoint=http://localhost:9000&&use_path_style=true&disable_https=true
         env:
           AWS_ACCESS_KEY_ID: minioadmin
           AWS_SECRET_ACCESS_KEY: minioadmin

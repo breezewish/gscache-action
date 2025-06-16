@@ -6,10 +6,13 @@ inputs:
     description: "Version of gscache to download"
     required: false
     default: ""
-  config:
-    description: "gscache configuration (populate to ~/.config/gscache/config.toml)"
+  storage:
+    description: "Cache storage location, like s3://bucket"
+    required: true
+  debug:
+    description: "Enable debug logging"
     required: false
-    default: ""
+    default: "false"
   github-token:
     description: "GitHub token for authenticated requests to avoid rate limiting"
     required: false
